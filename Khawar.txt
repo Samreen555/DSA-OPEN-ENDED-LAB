@@ -1,0 +1,4 @@
+Player: Khawar
+ODI Matches: 200
+T20 Matches: 300
+Test Matches: 250

@@ -1,0 +1,4 @@
+Player: Hassan Ali
+ODI Matches: 200
+T20 Matches: 14
+Test Matches: 30

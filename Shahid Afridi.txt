@@ -1,0 +1,4 @@
+Player: Shahid Afridi
+ODI Matches: 100
+T20 Matches: 140
+Test Matches: 122
