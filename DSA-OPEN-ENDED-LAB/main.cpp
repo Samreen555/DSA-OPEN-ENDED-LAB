@@ -2,10 +2,12 @@
 #include <string>
 #include <fstream>
 #include <limits>
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
 #include <cstdio>
 
 using namespace std;
-
+namespace fs = std::experimental::filesystem;
 struct Node {
     string playerName;
     int odiMatches, t20Matches, testMatches;
@@ -21,7 +23,7 @@ private:
     Node* head;
     Node* tail;
 
-    void writeToFile(Node* node) {
+        void writeToFile(Node* node) {
         string fileName = node->playerName + ".txt";
 
         // Remove the old file (optional, but ensures consistency)
@@ -39,9 +41,50 @@ private:
         outFile << "T20 Matches: " << node->t20Matches << endl;
         outFile << "Test Matches: " << node->testMatches << endl;
         outFile.close();
-
         cout << "File successfully updated for player: " << node->playerName << endl;
     }
+    void readPlayerFromFile(const string& fileName) {
+        cout << "Reading file: " << fileName << endl;
+
+        ifstream inFile(fileName);
+        if (!inFile.is_open()) {
+            cerr << "Error: Could not read file: " << fileName << endl;
+            return;
+        }
+
+        string line, name;
+        int odi = 0, t20 = 0, test = 0;
+        bool validFile = false;
+
+        while (getline(inFile, line)) {
+            //cout << "Processing line: " << line << endl; // Debug print
+
+            if (line.find("Player:") == 0) {
+                name = line.substr(line.find(":") + 2);
+                validFile = true;
+            }
+            else if (line.find("ODI Matches:") == 0) {
+                odi = stoi(line.substr(line.find(":") + 2));
+            }
+            else if (line.find("T20 Matches:") == 0) {
+                t20 = stoi(line.substr(line.find(":") + 2));
+            }
+            else if (line.find("Test Matches:") == 0) {
+                test = stoi(line.substr(line.find(":") + 2));
+            }
+        }
+
+        if (validFile) {
+            cout << "Adding player: " << name << " to the list." << endl;
+            insert_player(name, odi, t20, test);
+        }
+        else {
+            cerr << "Error: Invalid file format for " << fileName << endl;
+        }
+
+        inFile.close();
+    }
+
 
 public:
     doubly_linked_list() : head(nullptr), tail(nullptr) {}
@@ -67,6 +110,8 @@ public:
         }
         writeToFile(newNode); // Write player data to a file
         cout << "Player " << name << " added successfully." << endl;
+                cout << "--------\n";
+
     }
 
     Node* find_player(const string& name) {
@@ -130,21 +175,21 @@ public:
         cout << "Player " << name << " deleted successfully." << endl;
     }
 
-    void display_all_players() {
-        Node* current = head;
-        if (!current) {
-            cout << "No players found." << endl;
-            return;
-        }
-
-        while (current) {
-            cout << "Player: " << current->playerName
-                << ", ODI: " << current->odiMatches
-                << ", T20: " << current->t20Matches
-                << ", Test: " << current->testMatches << endl;
-            current = current->next;
-        }
+   void display_all_players() {
+    Node* current = head;
+    if (!current) {
+        cout << "No players found." << endl;
+        return;
     }
+
+    while (current) {
+        cout << "Player: " << current->playerName
+            << ", ODI: " << current->odiMatches
+            << ", T20: " << current->t20Matches
+            << ", Test: " << current->testMatches << endl;
+        current = current->next;
+    }
+}
 };
 
 int getValidatedInput(const string& prompt) {
@@ -208,6 +253,7 @@ int main() {
             team.delete_player(name);
         }
         else if (choice == "4") {
+            team.loadExistingPlayers();
             team.display_all_players();
         }
         else if (choice == "5") {
